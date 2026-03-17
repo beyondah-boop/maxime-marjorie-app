@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Maxime + Marjorie Fitness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+</head>
+
+<body style="font-family: Arial; text-align:center; padding:20px;">
+
+<h1>🔥 Maxime + Marjorie Fitness</h1>
+
+<div id="login">
+  <input id="email" placeholder="Email"><br><br>
+  <input id="password" placeholder="Password" type="password"><br><br>
+  <button onclick="login()">Login</button>
+  <button onclick="signup()">Create Account</button>
+</div>
+
+<div id="app" style="display:none;">
+  <h2>Welcome 💪</h2>
+  <input id="weight" placeholder="Weight">
+  <button onclick="save()">Save</button>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCH-KixHN0ZXkU0Q901H4hWXviPjy4Ytps",
+  authDomain: "couple-fitness-app.firebaseapp.com",
+  projectId: "couple-fitness-app"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="block";
+  }
+});
+
+function signup(){
+  auth.createUserWithEmailAndPassword(
+    email.value, password.value
+  );
+}
+
+function login(){
+  auth.signInWithEmailAndPassword(
+    email.value, password.value
+  );
+}
+
+function logout(){
+  auth.signOut();
+}
+
+function save(){
+  db.collection("checkins").add({
+    weight: weight.value,
+    date: new Date()
+  });
+  alert("Saved!");
+}
+</script>
+
+</body>
+</html>
