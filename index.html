@@ -1,75 +1,674 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Maxime + Marjorie Fitness</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0f172a" />
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #111827;
+      --soft: #e2e8f0;
+      --green: #ecfdf5;
+      --amber: #fffbeb;
+      --red: #fef2f2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #0f172a, #334155);
+      color: white;
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(15,23,42,.06);
+      margin-bottom: 14px;
+    }
+    .metric {
+      font-size: 28px;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; }
+    .tabs, .subtabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    button, .btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+    }
+    button.secondary, .btn.secondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--soft);
+    }
+    .active-tab {
+      background: var(--accent) !important;
+      color: white !important;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      font: inherit;
+      background: white;
+    }
+    textarea { min-height: 100px; resize: vertical; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .exercise {
+      border: 1px solid var(--soft);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .pill {
+      display: inline-block;
+      background: #f1f5f9;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-right: 6px;
+      margin-top: 6px;
+    }
+    .status-green, .status-amber, .status-red {
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .status-green { background: var(--green); }
+    .status-amber { background: var(--amber); }
+    .status-red { background: var(--red); }
+    .hidden { display: none !important; }
+    .schedule-item, .checkin-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 14px;
+      margin-bottom: 8px;
+    }
+    .bar {
+      height: 12px;
+      width: 100%;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #111827, #475569);
+      width: 0%;
+    }
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+    }
+    .photo-grid img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 14px;
+      display: block;
+    }
+    @media (max-width: 700px) {
+      .row, .grid-2, .tabs, .subtabs { grid-template-columns: 1fr; }
+      .photo-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
+<body>
+  <div class="wrap">
+    <div id="loginView">
+      <div class="hero">
+        <div class="small">Private couple fitness app</div>
+        <h1 style="margin:8px 0 4px;">Maxime + Marjorie Fitness</h1>
+        <div class="muted" style="color:#cbd5e1;">Shared dashboard, synced check-ins, workouts, charts, and motivation.</div>
+      </div>
 
-<body style="font-family: Arial; text-align:center; padding:20px;">
+      <div class="card" style="max-width:520px; margin: 0 auto;">
+        <h2 style="margin-top:0;">Login</h2>
+        <div class="grid-2">
+          <button id="loginModeBtn" class="active-tab" onclick="setAuthMode('login')">Login</button>
+          <button id="signupModeBtn" class="secondary" onclick="setAuthMode('signup')">Create Account</button>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label class="small muted">Email</label>
+          <input id="email" type="email" placeholder="shared@email.com" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label class="small muted">Password</label>
+          <input id="password" type="password" placeholder="password" />
+        </div>
+        <button onclick="submitAuth()" style="width:100%;">Continue</button>
+        <div id="authMessage" class="small muted" style="margin-top:10px;"></div>
+      </div>
+    </div>
 
-<h1>🔥 Maxime + Marjorie Fitness</h1>
+    <div id="appView" class="hidden">
+      <div class="hero">
+        <div class="small">Cloud synced</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+          <div>
+            <h1 style="margin:8px 0 4px;">Maxime + Marjorie Fitness</h1>
+            <div style="color:#cbd5e1;">Use the same login on both phones.</div>
+          </div>
+          <button class="secondary" onclick="logout()">Logout</button>
+        </div>
+      </div>
 
-<div id="login">
-  <input id="email" placeholder="Email"><br><br>
-  <input id="password" placeholder="Password" type="password"><br><br>
-  <button onclick="login()">Login</button>
-  <button onclick="signup()">Create Account</button>
-</div>
+      <div class="tabs">
+        <button id="tab-maxime" class="active-tab" onclick="switchProfile('maxime')">Maxime</button>
+        <button id="tab-marjorie" class="secondary" onclick="switchProfile('marjorie')">Marjorie</button>
+      </div>
 
-<div id="app" style="display:none;">
-  <h2>Welcome 💪</h2>
-  <input id="weight" placeholder="Weight">
-  <button onclick="save()">Save</button>
-  <button onclick="logout()">Logout</button>
-</div>
+      <div class="row">
+        <div class="card">
+          <div class="small muted">Current weight</div>
+          <div id="metricWeight" class="metric">—</div>
+          <div id="metricWeightSub" class="small muted">Goal —</div>
+        </div>
+        <div class="card">
+          <div class="small muted">Lost so far</div>
+          <div id="metricLost" class="metric">—</div>
+          <div id="metricLostSub" class="small muted">0% to goal</div>
+        </div>
+        <div class="card">
+          <div class="small muted">Waist</div>
+          <div id="metricWaist" class="metric">—</div>
+          <div class="small muted">Track weekly</div>
+        </div>
+        <div class="card">
+          <div class="small muted">Hips</div>
+          <div id="metricHips" class="metric">—</div>
+          <div class="small muted">Curves matter too</div>
+        </div>
+      </div>
 
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCH-KixHN0ZXkU0Q901H4hWXviPjy4Ytps",
-  authDomain: "couple-fitness-app.firebaseapp.com",
-  projectId: "couple-fitness-app"
-};
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+          <div>
+            <div style="font-weight:700;">Progress to goal</div>
+            <div id="progressLabel" class="small muted">0% complete</div>
+          </div>
+          <div id="goalLabel" class="small muted"></div>
+        </div>
+        <div class="bar"><div id="progressBar" class="bar-fill"></div></div>
+      </div>
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+      <div class="subtabs">
+        <button id="sub-dashboard" class="active-tab" onclick="switchSection('dashboard')">Dashboard</button>
+        <button id="sub-program" class="secondary" onclick="switchSection('program')">Program</button>
+      </div>
 
-auth.onAuthStateChanged(user => {
-  if(user){
-    document.getElementById("login").style.display="none";
-    document.getElementById("app").style.display="block";
-  }
-});
+      <div id="section-dashboard">
+        <div class="card">
+          <h3 style="margin-top:0;">Weekly reminder</h3>
+          <div class="grid-2">
+            <div>
+              <label class="small muted">Reminder day</label>
+              <input id="reminderDay" placeholder="Sunday" />
+            </div>
+            <div>
+              <label class="small muted">Reminder note</label>
+              <input id="reminderText" placeholder="Weekly check-in..." />
+            </div>
+          </div>
+          <button style="margin-top:10px;" onclick="saveReminder()">Save reminder</button>
+        </div>
 
-function signup(){
-  auth.createUserWithEmailAndPassword(
-    email.value, password.value
-  );
-}
+        <div class="card">
+          <h3 style="margin-top:0;">Check-in</h3>
+          <div class="grid-2">
+            <div>
+              <label class="small muted">Date</label>
+              <input id="checkinDate" type="date" />
+            </div>
+            <div>
+              <label class="small muted">Weight</label>
+              <input id="checkinWeight" type="number" step="0.1" placeholder="lbs" />
+            </div>
+            <div>
+              <label class="small muted">Waist</label>
+              <input id="checkinWaist" type="number" step="0.1" placeholder="inches" />
+            </div>
+            <div>
+              <label class="small muted">Hips</label>
+              <input id="checkinHips" type="number" step="0.1" placeholder="inches" />
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <label class="small muted">Notes</label>
+            <input id="checkinNotes" placeholder="How you felt, wins, setbacks..." />
+          </div>
+          <button style="margin-top:10px;" onclick="saveCheckin()">Save check-in</button>
+        </div>
 
-function login(){
-  auth.signInWithEmailAndPassword(
-    email.value, password.value
-  );
-}
+        <div class="card">
+          <h3 style="margin-top:0;">Motivation note</h3>
+          <textarea id="motivationText" placeholder="Why this matters, what you refuse to go back to..."></textarea>
+          <button style="margin-top:10px;" onclick="saveMotivation()">Save motivation</button>
+        </div>
 
-function logout(){
-  auth.signOut();
-}
+        <div class="card">
+          <h3 style="margin-top:0;">Motivation system</h3>
+          <div class="status-green"><strong>Green — keep going</strong><br><span class="small muted">Weight trending down, waist down, energy good.</span></div>
+          <div class="status-amber"><strong>Yellow — small adjustment</strong><br><span class="small muted">No change for 1 week. Add 10–15 min walking or tighten food slightly.</span></div>
+          <div class="status-red"><strong>Red — reset</strong><br><span class="small muted">No progress for 2 weeks. Clean nutrition, add cardio, no skipping.</span></div>
+        </div>
 
-function save(){
-  db.collection("checkins").add({
-    weight: weight.value,
-    date: new Date()
-  });
-  alert("Saved!");
-}
-</script>
+        <div class="card">
+          <h3 style="margin-top:0;">Progress charts</h3>
+          <canvas id="weightChart" height="140"></canvas>
+          <div style="height:12px;"></div>
+          <canvas id="shapeChart" height="140"></canvas>
+        </div>
 
+        <div class="card">
+          <h3 style="margin-top:0;">Saved check-ins</h3>
+          <div id="checkinsList"></div>
+        </div>
+      </div>
+
+      <div id="section-program" class="hidden">
+        <div class="card">
+          <h3 style="margin-top:0;">Weekly schedule</h3>
+          <div id="scheduleList"></div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;">Workout A / B</h3>
+          <div class="subtabs">
+            <button id="workoutAButton" class="active-tab" onclick="switchWorkout('A')">Workout A</button>
+            <button id="workoutBButton" class="secondary" onclick="switchWorkout('B')">Workout B</button>
+          </div>
+          <div id="exerciseList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCH-KixHN0ZXkU0Q901H4hWXviPjy4Ytps",
+      authDomain: "couple-fitness-app.firebaseapp.com",
+      projectId: "couple-fitness-app",
+      storageBucket: "couple-fitness-app.firebasestorage.app",
+      messagingSenderId: "779500720567",
+      appId: "1:779500720567:web:7cf6b6e5e515ddccc69832"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let authMode = 'login';
+    let currentProfile = 'maxime';
+    let currentWorkout = 'A';
+    let weightChart = null;
+    let shapeChart = null;
+
+    const programs = {
+      maxime: {
+        name: 'Maxime',
+        startWeight: 210,
+        goalWeight: 180,
+        targetLoss: 30,
+        focus: 'Lose visceral fat, protect knee, get stronger',
+        reminderDay: 'Sunday',
+        reminderText: 'Weekly check-in: weight, waist, hips, motivation reset.',
+        weeklyPlan: [
+          ['Monday', 'Workout A'],
+          ['Tuesday', 'Walk / Recovery'],
+          ['Wednesday', 'Workout B'],
+          ['Thursday', 'Mobility / Recovery'],
+          ['Friday', 'Workout A'],
+          ['Saturday', 'Optional cardio or Workout B'],
+          ['Sunday', 'Rest']
+        ],
+        workouts: {
+          A: [
+            ['Goblet Squat', '3 x 10-12', '35 lbs', '+5 lbs every 2 weeks', 'Chest up, sit back, pain-free depth', 'https://www.youtube.com/results?search_query=goblet+squat+proper+form'],
+            ['Bench Press', '3 x 8-10', '95 lbs', '+5 lbs/week', 'Control down, drive up', 'https://www.youtube.com/results?search_query=dumbbell+bench+press+form'],
+            ['Lat Pulldown', '3 x 10-12', '90 lbs', '+5 lbs/week', 'Chest up, pull to upper chest', 'https://www.youtube.com/results?search_query=lat+pulldown+proper+form'],
+            ['Romanian Deadlift', '3 x 10', '95 lbs', '+10 lbs every 2 weeks', 'Hips back, flat back', 'https://www.youtube.com/results?search_query=romanian+deadlift+proper+form'],
+            ['Shoulder Press', '3 x 8-10', '30 lbs', '+5 lbs every 2 weeks', 'Core tight, no arch', 'https://www.youtube.com/results?search_query=dumbbell+shoulder+press+proper+form'],
+            ['Plank', '3 x 30-45 sec', 'Bodyweight', '+5 sec weekly', 'Straight line, brace abs', 'https://www.youtube.com/results?search_query=plank+proper+form']
+          ],
+          B: [
+            ['Step-Ups', '3 x 8/leg', 'Bodyweight', 'Add weight slowly', 'Control step, no knee collapse', 'https://www.youtube.com/results?search_query=step+ups+proper+form'],
+            ['Incline DB Press', '3 x 10', '40 lbs', '+5 lbs/week', 'Slow down, strong press', 'https://www.youtube.com/results?search_query=incline+dumbbell+press+proper+form'],
+            ['DB Row', '3 x 10/side', '45 lbs', '+5 lbs/week', 'Flat back, pull elbow', 'https://www.youtube.com/results?search_query=one+arm+dumbbell+row+proper+form'],
+            ['Hip Thrust', '3 x 12', '115 lbs', '+10 lbs every 2 weeks', 'Squeeze glutes at top', 'https://www.youtube.com/results?search_query=hip+thrust+proper+form'],
+            ['Biceps Curl', '3 x 10-12', '25 lbs', '+5 lbs when easy', 'Elbows still, control', 'https://www.youtube.com/results?search_query=dumbbell+bicep+curl+proper+form'],
+            ['Med Ball Slams', '3 x 10', '50 lbs', 'Power focus', 'Explosive full body', 'https://www.youtube.com/results?search_query=medicine+ball+slam+proper+form']
+          ]
+        }
+      },
+      marjorie: {
+        name: 'Marjorie',
+        startWeight: 250,
+        goalWeight: 200,
+        targetLoss: 50,
+        focus: 'Lose visceral fat, shape waist and glutes, build curves',
+        reminderDay: 'Sunday',
+        reminderText: 'Weekly check-in: weight, waist, hips, motivation reset.',
+        weeklyPlan: [
+          ['Monday', 'Workout A'],
+          ['Tuesday', 'Treadmill Walk 30 min'],
+          ['Wednesday', 'Workout B'],
+          ['Thursday', 'Walk + Mobility'],
+          ['Friday', 'Workout A'],
+          ['Saturday', 'Optional Workout B or Walk'],
+          ['Sunday', 'Rest']
+        ],
+        workouts: {
+          A: [
+            ['Goblet Squat', '3 x 10-12', '25 lbs', '+5 lbs every 2 weeks', 'Sit back, chest up', 'https://www.youtube.com/results?search_query=goblet+squat+proper+form'],
+            ['Hip Thrust', '3 x 12', '95 lbs', '+10 lbs every 2 weeks', 'Squeeze glutes hard', 'https://www.youtube.com/results?search_query=hip+thrust+proper+form'],
+            ['Bench Press', '3 x 8-10', '65 lbs', '+5 lbs/week', 'Control and press', 'https://www.youtube.com/results?search_query=dumbbell+bench+press+proper+form'],
+            ['Lat Pulldown', '3 x 10-12', '70 lbs', '+5 lbs/week', 'Pull to chest', 'https://www.youtube.com/results?search_query=lat+pulldown+proper+form'],
+            ['Shoulder Press', '3 x 10', '20 lbs', '+5 lbs every 2 weeks', 'Core tight', 'https://www.youtube.com/results?search_query=dumbbell+shoulder+press+proper+form']
+          ],
+          B: [
+            ['Step-Ups', '3 x 8/leg', 'Bodyweight', 'Add weight slowly', 'Push through heel', 'https://www.youtube.com/results?search_query=step+ups+proper+form'],
+            ['Romanian Deadlift', '3 x 10', '75 lbs', '+10 lbs every 2 weeks', 'Hips back, stretch hamstrings', 'https://www.youtube.com/results?search_query=romanian+deadlift+proper+form'],
+            ['DB Row', '3 x 10', '30 lbs', '+5 lbs/week', 'Flat back', 'https://www.youtube.com/results?search_query=one+arm+dumbbell+row+proper+form'],
+            ['Glute Bridge', '3 x 12', 'Bodyweight', 'Add weight later', 'Squeeze glutes', 'https://www.youtube.com/results?search_query=glute+bridge+proper+form'],
+            ['Plank', '3 x 30 sec', 'Bodyweight', '+5 sec weekly', 'Brace abs', 'https://www.youtube.com/results?search_query=plank+proper+form'],
+            ['Treadmill Walk', '30-45 min', 'N/A', '+5 min or +incline', 'Moderate pace, slight incline', 'https://www.youtube.com/results?search_query=treadmill+walking+fat+loss+incline']
+          ]
+        }
+      }
+    };
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      document.getElementById('loginModeBtn').className = mode === 'login' ? 'active-tab' : 'secondary';
+      document.getElementById('signupModeBtn').className = mode === 'signup' ? 'active-tab' : 'secondary';
+      document.getElementById('authMessage').textContent = '';
+    }
+
+    async function submitAuth() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const msg = document.getElementById('authMessage');
+      msg.textContent = 'Working...';
+      try {
+        if (authMode === 'signup') {
+          await auth.createUserWithEmailAndPassword(email, password);
+          msg.textContent = 'Account created.';
+        } else {
+          await auth.signInWithEmailAndPassword(email, password);
+          msg.textContent = 'Logged in.';
+        }
+      } catch (e) {
+        msg.textContent = e.message;
+      }
+    }
+
+    function logout() {
+      auth.signOut();
+    }
+
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('appView').classList.remove('hidden');
+        await seedProfiles();
+        await loadProfile();
+      } else {
+        document.getElementById('loginView').classList.remove('hidden');
+        document.getElementById('appView').classList.add('hidden');
+      }
+    });
+
+    async function seedProfiles() {
+      const batch = [];
+      for (const key of Object.keys(programs)) {
+        const ref = db.collection('profiles').doc(key);
+        const snap = await ref.get();
+        if (!snap.exists) {
+          batch.push(ref.set({
+            ...programs[key],
+            motivation: ''
+          }));
+        }
+      }
+      await Promise.all(batch);
+    }
+
+    function switchProfile(profile) {
+      currentProfile = profile;
+      document.getElementById('tab-maxime').className = profile === 'maxime' ? 'active-tab' : 'secondary';
+      document.getElementById('tab-marjorie').className = profile === 'marjorie' ? 'active-tab' : 'secondary';
+      loadProfile();
+    }
+
+    function switchSection(section) {
+      document.getElementById('section-dashboard').classList.toggle('hidden', section !== 'dashboard');
+      document.getElementById('section-program').classList.toggle('hidden', section !== 'program');
+      document.getElementById('sub-dashboard').className = section === 'dashboard' ? 'active-tab' : 'secondary';
+      document.getElementById('sub-program').className = section === 'program' ? 'active-tab' : 'secondary';
+    }
+
+    function switchWorkout(letter) {
+      currentWorkout = letter;
+      document.getElementById('workoutAButton').className = letter === 'A' ? 'active-tab' : 'secondary';
+      document.getElementById('workoutBButton').className = letter === 'B' ? 'active-tab' : 'secondary';
+      renderExercises();
+    }
+
+    async function loadProfile() {
+      const profileDoc = await db.collection('profiles').doc(currentProfile).get();
+      const profile = profileDoc.data();
+      const checkinsSnap = await db.collection('profiles').doc(currentProfile).collection('checkins').orderBy('checkinDate', 'desc').get();
+      const checkins = checkinsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      renderHeader(profile, checkins);
+      renderSchedule(profile);
+      renderExercises();
+      renderFormFields(profile);
+      renderCheckins(checkins);
+      renderCharts(profile, checkins);
+    }
+
+    function renderHeader(profile, checkins) {
+      const latest = checkins[0] || {};
+      const currentWeight = latest.weight ?? profile.startWeight;
+      const currentWaist = latest.waist ?? '—';
+      const currentHips = latest.hips ?? '—';
+      const lost = Math.max(0, profile.startWeight - currentWeight);
+      const progress = Math.max(0, Math.min(100, Math.round((lost / (profile.startWeight - profile.goalWeight)) * 100)));
+
+      document.getElementById('metricWeight').textContent = currentWeight + ' lbs';
+      document.getElementById('metricWeightSub').textContent = 'Goal ' + profile.goalWeight + ' lbs';
+      document.getElementById('metricLost').textContent = lost + ' lbs';
+      document.getElementById('metricLostSub').textContent = progress + '% to goal';
+      document.getElementById('metricWaist').textContent = currentWaist;
+      document.getElementById('metricHips').textContent = currentHips;
+      document.getElementById('progressLabel').textContent = progress + '% complete';
+      document.getElementById('goalLabel').textContent = profile.name + ' · Goal ' + profile.goalWeight + ' lbs';
+      document.getElementById('progressBar').style.width = progress + '%';
+    }
+
+    function renderFormFields(profile) {
+      document.getElementById('reminderDay').value = profile.reminderDay || '';
+      document.getElementById('reminderText').value = profile.reminderText || '';
+      document.getElementById('motivationText').value = profile.motivation || '';
+      if (!document.getElementById('checkinDate').value) {
+        document.getElementById('checkinDate').value = new Date().toISOString().slice(0,10);
+      }
+    }
+
+    function renderSchedule(profile) {
+      const wrap = document.getElementById('scheduleList');
+      wrap.innerHTML = profile.weeklyPlan.map(([day, plan]) => `
+        <div class="schedule-item">
+          <div><strong>${day}</strong><br><span class="small muted">${plan}</span></div>
+          <div class="pill">Plan</div>
+        </div>
+      `).join('');
+    }
+
+    function renderExercises() {
+      const wrap = document.getElementById('exerciseList');
+      const list = programs[currentProfile].workouts[currentWorkout];
+      wrap.innerHTML = list.map((ex, idx) => `
+        <div class="exercise">
+          <div style="display:flex; justify-content:space-between; gap:10px; align-items:start;">
+            <div>
+              <div style="font-weight:700;">${ex[0]}</div>
+              <div class="small muted">${ex[1]} · Start: ${ex[2]}</div>
+            </div>
+          </div>
+          <div style="margin-top:8px;"><span class="pill">Progression: ${ex[3]}</span></div>
+          <div class="small" style="margin-top:8px;">Cue: ${ex[4]}</div>
+          <a class="btn" style="display:inline-block; text-decoration:none; margin-top:10px;" href="${ex[5]}" target="_blank">Clickable visual</a>
+        </div>
+      `).join('');
+    }
+
+    function renderCheckins(checkins) {
+      const wrap = document.getElementById('checkinsList');
+      if (!checkins.length) {
+        wrap.innerHTML = '<div class="small muted">No check-ins yet.</div>';
+        return;
+      }
+      wrap.innerHTML = checkins.map(c => `
+        <div class="checkin-item">
+          <div>
+            <strong>${c.checkinDate || 'No date'}</strong><br>
+            <span class="small muted">Weight: ${c.weight ?? '—'} · Waist: ${c.waist ?? '—'} · Hips: ${c.hips ?? '—'}</span>
+            ${c.notes ? `<div class="small" style="margin-top:4px;">${c.notes}</div>` : ''}
+          </div>
+          <button class="secondary" onclick="deleteCheckin('${c.id}')">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    function renderCharts(profile, checkins) {
+      const ordered = [...checkins].reverse();
+      const labels = ordered.map(c => (c.checkinDate || '').slice(5));
+      const weights = ordered.map(c => c.weight ?? null);
+      const waists = ordered.map(c => c.waist ?? null);
+      const hips = ordered.map(c => c.hips ?? null);
+
+      if (weightChart) weightChart.destroy();
+      if (shapeChart) shapeChart.destroy();
+
+      weightChart = new Chart(document.getElementById('weightChart'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{ label: 'Weight', data: weights, borderWidth: 2, tension: .3 }]
+        },
+        options: { responsive: true, plugins: { legend: { display: true } } }
+      });
+
+      shapeChart = new Chart(document.getElementById('shapeChart'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Waist', data: waists, borderWidth: 2, tension: .3 },
+            { label: 'Hips', data: hips, borderWidth: 2, tension: .3 }
+          ]
+        },
+        options: { responsive: true, plugins: { legend: { display: true } } }
+      });
+    }
+
+    async function saveReminder() {
+      await db.collection('profiles').doc(currentProfile).update({
+        reminderDay: document.getElementById('reminderDay').value.trim(),
+        reminderText: document.getElementById('reminderText').value.trim()
+      });
+      alert('Reminder saved');
+      loadProfile();
+    }
+
+    async function saveMotivation() {
+      await db.collection('profiles').doc(currentProfile).update({
+        motivation: document.getElementById('motivationText').value.trim()
+      });
+      alert('Motivation saved');
+      loadProfile();
+    }
+
+    async function saveCheckin() {
+      const data = {
+        checkinDate: document.getElementById('checkinDate').value,
+        weight: toNumberOrNull(document.getElementById('checkinWeight').value),
+        waist: toNumberOrNull(document.getElementById('checkinWaist').value),
+        hips: toNumberOrNull(document.getElementById('checkinHips').value),
+        notes: document.getElementById('checkinNotes').value.trim(),
+        createdAt: new Date()
+      };
+      if (!data.checkinDate) return alert('Please choose a date');
+      await db.collection('profiles').doc(currentProfile).collection('checkins').add(data);
+      document.getElementById('checkinWeight').value = '';
+      document.getElementById('checkinWaist').value = '';
+      document.getElementById('checkinHips').value = '';
+      document.getElementById('checkinNotes').value = '';
+      alert('Check-in saved');
+      loadProfile();
+    }
+
+    async function deleteCheckin(id) {
+      await db.collection('profiles').doc(currentProfile).collection('checkins').doc(id).delete();
+      loadProfile();
+    }
+
+    function toNumberOrNull(value) {
+      if (value === '' || value === null || value === undefined) return null;
+      const n = Number(value);
+      return Number.isNaN(n) ? null : n;
+    }
+  </script>
 </body>
 </html>
