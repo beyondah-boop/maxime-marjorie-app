@@ -502,18 +502,23 @@
     }
 
     async function loadProfile() {
-      const profileDoc = await db.collection('profiles').doc(currentProfile).get();
-      const profile = profileDoc.data();
-      const checkinsSnap = await db.collection('profiles').doc(currentProfile).collection('checkins').orderBy('checkinDate', 'desc').get();
-      const checkins = checkinsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const profileDoc = await db.collection('profiles').doc(currentProfile).get();
+  const savedProfile = profileDoc.exists ? profileDoc.data() : {};
+  const profile = {
+    ...programs[currentProfile],
+    ...savedProfile
+  };
 
-      renderHeader(profile, checkins);
-      renderSchedule(profile);
-      renderExercises();
-      renderFormFields(profile);
-      renderCheckins(checkins);
-      renderCharts(profile, checkins);
-    }
+  const checkinsSnap = await db.collection('profiles').doc(currentProfile).collection('checkins').orderBy('createdAt', 'desc').get();
+  const checkins = checkinsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  renderHeader(profile, checkins);
+  renderSchedule(profile);
+  renderExercises();
+  renderFormFields(profile);
+  renderCheckins(checkins);
+  renderCharts(profile, checkins);
+}
 
     function renderHeader(profile, checkins) {
       const latest = checkins[0] || {};
