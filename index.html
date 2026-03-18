@@ -469,19 +469,16 @@
     });
 
     async function seedProfiles() {
-      const batch = [];
-      for (const key of Object.keys(programs)) {
-        const ref = db.collection('profiles').doc(key);
-        const snap = await ref.get();
-        if (!snap.exists) {
-          batch.push(ref.set({
-            ...programs[key],
-            motivation: ''
-          }));
-        }
-      }
-      await Promise.all(batch);
-    }
+  const batch = [];
+  for (const key of Object.keys(programs)) {
+    const ref = db.collection('profiles').doc(key);
+    batch.push(ref.set({
+      ...programs[key],
+      motivation: programs[key].motivation || ''
+    }, { merge: true }));
+  }
+  await Promise.all(batch);
+}
 
     function switchProfile(profile) {
       currentProfile = profile;
