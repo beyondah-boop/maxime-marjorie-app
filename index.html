@@ -457,16 +457,20 @@
     }
 
     auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        document.getElementById('loginView').classList.add('hidden');
-        document.getElementById('appView').classList.remove('hidden');
-        await seedProfiles();
-        await loadProfile();
-      } else {
-        document.getElementById('loginView').classList.remove('hidden');
-        document.getElementById('appView').classList.add('hidden');
-      }
-    });
+  if (user) {
+    document.getElementById('loginView').classList.add('hidden');
+    document.getElementById('appView').classList.remove('hidden');
+
+    await seedProfiles();
+
+    // 🔥 force clean load
+    switchProfile('maxime');
+
+  } else {
+    document.getElementById('loginView').classList.remove('hidden');
+    document.getElementById('appView').classList.add('hidden');
+  }
+});
 
     async function seedProfiles() {
   const batch = [];
