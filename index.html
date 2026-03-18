@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maxime + Marjorie Fitness FINAL TEST</title>
+  <title>Maxime + Marjorie Fitness</title>
   <meta name="theme-color" content="#0f172a" />
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -90,8 +90,6 @@
       border: 1px solid #cbd5e1;
       font: inherit;
       background: white;
-      -webkit-appearance: none;
-  font-size: 16px;
     }
     textarea { min-height: 100px; resize: vertical; }
     .grid-2 {
@@ -263,36 +261,32 @@
           <button style="margin-top:10px;" onclick="saveReminder()">Save reminder</button>
         </div>
 
-       <div class="card">
-  <h3 style="margin-top:0;">Check-in</h3>
-
-  <div style="margin-bottom:10px;">
-    <label class="small muted">Date</label>
-    <input id="checkinDate" type="text" placeholder="YYYY-MM-DD" />
-  </div>
-
-  <div style="margin-bottom:10px;">
-    <label class="small muted">Weight</label>
-    <input id="checkinWeight" type="text" placeholder="lbs" />
-  </div>
-
-  <div style="margin-bottom:10px;">
-    <label class="small muted">Waist</label>
-    <input id="checkinWaist" type="text" placeholder="inches" />
-  </div>
-
-  <div style="margin-bottom:10px;">
-    <label class="small muted">Hips</label>
-    <input id="checkinHips" type="text" placeholder="inches" />
-  </div>
-
-  <div style="margin-top:10px;">
-    <label class="small muted">Notes</label>
-    <input id="checkinNotes" type="text" placeholder="How you felt, wins, setbacks..." />
-  </div>
-
-  <button style="margin-top:10px;" onclick="saveCheckin()">Save check-in</button>
-</div>
+        <div class="card">
+          <h3 style="margin-top:0;">Check-in</h3>
+          <div class="grid-2">
+            <div>
+              <label class="small muted">Date</label>
+              <input id="checkinDate" type="date" />
+            </div>
+            <div>
+              <label class="small muted">Weight</label>
+              <input id="checkinWeight" type="number" step="0.1" placeholder="lbs" />
+            </div>
+            <div>
+              <label class="small muted">Waist</label>
+              <input id="checkinWaist" type="number" step="0.1" placeholder="inches" />
+            </div>
+            <div>
+              <label class="small muted">Hips</label>
+              <input id="checkinHips" type="number" step="0.1" placeholder="inches" />
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <label class="small muted">Notes</label>
+            <input id="checkinNotes" placeholder="How you felt, wins, setbacks..." />
+          </div>
+          <button style="margin-top:10px;" onclick="saveCheckin()">Save check-in</button>
+        </div>
 
         <div class="card">
           <h3 style="margin-top:0;">Motivation note</h3>
@@ -320,7 +314,8 @@
         </div>
       </div>
 
-      <div id="section-program">
+      <div id="section-program" class="hidden">
+        <div id="todayWorkoutCard" class="card"></div>
         <div class="card">
           <h3 style="margin-top:0;">Weekly schedule</h3>
           <div id="scheduleList"></div>
@@ -340,12 +335,12 @@
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyCH-KixHN0ZXkU0Q901H4hWXviPjy4Ytps",
-      authDomain: "couple-fitness-app.firebaseapp.com",
-      projectId: "couple-fitness-app",
-      storageBucket: "couple-fitness-app.firebasestorage.app",
-      messagingSenderId: "779500720567",
-      appId: "1:779500720567:web:7cf6b6e5e515ddccc69832"
+      apiKey: "PASTE_YOUR_API_KEY",
+      authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+      projectId: "PASTE_YOUR_PROJECT_ID",
+      storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
+      messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
+      appId: "PASTE_YOUR_APP_ID"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -512,7 +507,7 @@
     async function loadProfile() {
       const profileDoc = await db.collection('profiles').doc(currentProfile).get();
       const profile = profileDoc.data();
-      const checkinsSnap = await db.collection('profiles').doc(currentProfile).collection('checkins').orderBy('createdAt', 'desc').get();
+      const checkinsSnap = await db.collection('profiles').doc(currentProfile).collection('checkins').orderBy('checkinDate', 'desc').get();
       const checkins = checkinsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
       renderHeader(profile, checkins);
@@ -543,22 +538,39 @@
     }
 
     function renderFormFields(profile) {
-  document.getElementById('reminderDay').value = profile.reminderDay || '';
-  document.getElementById('reminderText').value = profile.reminderText || '';
-  document.getElementById('motivationText').value = profile.motivation || '';
-  if (!document.getElementById('checkinDate').value) {
-    document.getElementById('checkinDate').value = new Date().toISOString().slice(0,10);
-  }
-}
+      document.getElementById('reminderDay').value = profile.reminderDay || '';
+      document.getElementById('reminderText').value = profile.reminderText || '';
+      document.getElementById('motivationText').value = profile.motivation || '';
+      if (!document.getElementById('checkinDate').value) {
+        document.getElementById('checkinDate').value = new Date().toISOString().slice(0,10);
+      }
+    }
 
     function renderSchedule(profile) {
       const wrap = document.getElementById('scheduleList');
-      wrap.innerHTML = profile.weeklyPlan.map(([day, plan]) => `
-        <div class="schedule-item">
-          <div><strong>${day}</strong><br><span class="small muted">${plan}</span></div>
-          <div class="pill">Plan</div>
-        </div>
-      `).join('');
+      const todayIndex = new Date().getDay();
+      const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const todayName = dayMap[todayIndex];
+      const todayPlan = profile.weeklyPlan.find(([day]) => day === todayName);
+
+      const todayCard = document.getElementById('todayWorkoutCard');
+      if (todayCard) {
+        todayCard.innerHTML = `
+          <div class="small muted">Today’s plan</div>
+          <div class="metric" style="font-size:24px;">${todayName}</div>
+          <div style="margin-top:6px; font-weight:700;">${todayPlan ? todayPlan[1] : 'No plan found'}</div>
+        `;
+      }
+
+      wrap.innerHTML = profile.weeklyPlan.map(([day, plan]) => {
+        const isToday = day === todayName;
+        return `
+          <div class="schedule-item" style="border:${isToday ? '2px solid #0f172a' : '0'}; background:${isToday ? '#e2e8f0' : '#f8fafc'};">
+            <div><strong>${day}${isToday ? ' • Today' : ''}</strong><br><span class="small muted">${plan}</span></div>
+            <div class="pill">Plan</div>
+          </div>
+        `;
+      }).join('');
     }
 
     function renderExercises() {
