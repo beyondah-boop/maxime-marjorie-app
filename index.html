@@ -263,32 +263,36 @@
           <button style="margin-top:10px;" onclick="saveReminder()">Save reminder</button>
         </div>
 
-        <div class="card">
-          <h3 style="margin-top:0;">Check-in</h3>
-          <div class="grid-2">
-            <div>
-              <label class="small muted">Date</label>
-              <input id="checkinDate" type="date" />
-            </div>
-            <div>
-              <label class="small muted">Weight</label>
-              <input id="checkinWeight" type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" placeholder="lbs" autocapitalize="off" autocomplete="off" autocorrect="off" />
-            </div>
-            <div>
-              <label class="small muted">Waist</label>
-              <input id="checkinWaist" type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" placeholder="inches" autocapitalize="off" autocomplete="off" autocorrect="off" />
-            </div>
-            <div>
-              <label class="small muted">Hips</label>
-              <input id="checkinHips" type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" placeholder="inches" autocapitalize="off" autocomplete="off" autocorrect="off" />
-            </div>
-          </div>
-          <div style="margin-top:10px;">
-            <label class="small muted">Notes</label>
-            <input id="checkinNotes" placeholder="How you felt, wins, setbacks..." />
-          </div>
-          <button style="margin-top:10px;" onclick="saveCheckin()">Save check-in</button>
-        </div>
+       <div class="card">
+  <h3 style="margin-top:0;">Check-in</h3>
+
+  <div style="margin-bottom:10px;">
+    <label class="small muted">Date</label>
+    <input id="checkinDate" type="text" placeholder="YYYY-MM-DD" />
+  </div>
+
+  <div style="margin-bottom:10px;">
+    <label class="small muted">Weight</label>
+    <input id="checkinWeight" type="text" placeholder="lbs" />
+  </div>
+
+  <div style="margin-bottom:10px;">
+    <label class="small muted">Waist</label>
+    <input id="checkinWaist" type="text" placeholder="inches" />
+  </div>
+
+  <div style="margin-bottom:10px;">
+    <label class="small muted">Hips</label>
+    <input id="checkinHips" type="text" placeholder="inches" />
+  </div>
+
+  <div style="margin-top:10px;">
+    <label class="small muted">Notes</label>
+    <input id="checkinNotes" type="text" placeholder="How you felt, wins, setbacks..." />
+  </div>
+
+  <button style="margin-top:10px;" onclick="saveCheckin()">Save check-in</button>
+</div>
 
         <div class="card">
           <h3 style="margin-top:0;">Motivation note</h3>
@@ -316,7 +320,7 @@
         </div>
       </div>
 
-      <div id="section-program" class="hidden">
+      <div id="section-program">
         <div class="card">
           <h3 style="margin-top:0;">Weekly schedule</h3>
           <div id="scheduleList"></div>
@@ -539,13 +543,13 @@
     }
 
     function renderFormFields(profile) {
-      document.getElementById('reminderDay').value = profile.reminderDay || '';
-      document.getElementById('reminderText').value = profile.reminderText || '';
-      document.getElementById('motivationText').value = profile.motivation || '';
-      if (!document.getElementById('checkinDate').value) {
-        document.getElementById('checkinDate').value = new Date().toISOString().slice(0,10);
-      }
-    }
+  document.getElementById('reminderDay').value = profile.reminderDay || '';
+  document.getElementById('reminderText').value = profile.reminderText || '';
+  document.getElementById('motivationText').value = profile.motivation || '';
+  if (!document.getElementById('checkinDate').value) {
+    document.getElementById('checkinDate').value = new Date().toISOString().slice(0,10);
+  }
+}
 
     function renderSchedule(profile) {
       const wrap = document.getElementById('scheduleList');
