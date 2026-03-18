@@ -512,7 +512,7 @@
     async function loadProfile() {
       const profileDoc = await db.collection('profiles').doc(currentProfile).get();
       const profile = profileDoc.data();
-      const checkinsSnap = await db.collection('profiles').doc(currentProfile).collection('checkins').orderBy('checkinDate', 'desc').get();
+      const checkinsSnap = await db.collection('profiles').doc(currentProfile).collection('checkins').orderBy('createdAt', 'desc').get();
       const checkins = checkinsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
       renderHeader(profile, checkins);
