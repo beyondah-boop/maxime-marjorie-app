@@ -315,11 +315,11 @@
       </div>
 
       <div id="section-program" class="hidden">
-        <div id="todayWorkoutCard" class="card"></div>
-        <div class="card">
-          <h3 style="margin-top:0;">Weekly schedule</h3>
-          <div id="scheduleList"></div>
-        </div>
+  <div id="todayWorkoutCard" class="card"></div>
+  <div class="card">
+    <h3 style="margin-top:0;">Weekly schedule</h3>
+    <div id="scheduleList"></div>
+  </div>
 
         <div class="card">
           <h3 style="margin-top:0;">Workout A / B</h3>
@@ -547,31 +547,31 @@
     }
 
     function renderSchedule(profile) {
-      const wrap = document.getElementById('scheduleList');
-      const todayIndex = new Date().getDay();
-      const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const todayName = dayMap[todayIndex];
-      const todayPlan = profile.weeklyPlan.find(([day]) => day === todayName);
+  const wrap = document.getElementById('scheduleList');
+  const todayIndex = new Date().getDay();
+  const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const todayName = dayMap[todayIndex];
+  const todayPlan = profile.weeklyPlan.find(([day]) => day === todayName);
 
-      const todayCard = document.getElementById('todayWorkoutCard');
-      if (todayCard) {
-        todayCard.innerHTML = `
-          <div class="small muted">Today’s plan</div>
-          <div class="metric" style="font-size:24px;">${todayName}</div>
-          <div style="margin-top:6px; font-weight:700;">${todayPlan ? todayPlan[1] : 'No plan found'}</div>
-        `;
-      }
+  const todayCard = document.getElementById('todayWorkoutCard');
+  if (todayCard) {
+    todayCard.innerHTML = `
+      <div class="small muted">Today’s plan</div>
+      <div class="metric" style="font-size:24px;">${todayName}</div>
+      <div style="margin-top:6px; font-weight:700;">${todayPlan ? todayPlan[1] : 'No plan found'}</div>
+    `;
+  }
 
-      wrap.innerHTML = profile.weeklyPlan.map(([day, plan]) => {
-        const isToday = day === todayName;
-        return `
-          <div class="schedule-item" style="border:${isToday ? '2px solid #0f172a' : '0'}; background:${isToday ? '#e2e8f0' : '#f8fafc'};">
-            <div><strong>${day}${isToday ? ' • Today' : ''}</strong><br><span class="small muted">${plan}</span></div>
-            <div class="pill">Plan</div>
-          </div>
-        `;
-      }).join('');
-    }
+  wrap.innerHTML = profile.weeklyPlan.map(([day, plan]) => {
+    const isToday = day === todayName;
+    return `
+      <div class="schedule-item" style="border:${isToday ? '2px solid #0f172a' : '0'}; background:${isToday ? '#e2e8f0' : '#f8fafc'};">
+        <div><strong>${day}${isToday ? ' • Today' : ''}</strong><br><span class="small muted">${plan}</span></div>
+        <div class="pill">Plan</div>
+      </div>
+    `;
+  }).join('');
+}
 
     function renderExercises() {
       const wrap = document.getElementById('exerciseList');
