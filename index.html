@@ -90,6 +90,8 @@
       border: 1px solid #cbd5e1;
       font: inherit;
       background: white;
+      -webkit-appearance: none;
+  font-size: 16px;
     }
     textarea { min-height: 100px; resize: vertical; }
     .grid-2 {
@@ -270,15 +272,15 @@
             </div>
             <div>
               <label class="small muted">Weight</label>
-              <input id="checkinWeight" type="text" inputmode="decimal" placeholder="lbs" />
+              <input id="checkinWeight" type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" placeholder="lbs" autocapitalize="off" autocomplete="off" autocorrect="off" />
             </div>
             <div>
               <label class="small muted">Waist</label>
-              <input id="checkinWaist" type="text" inputmode="decimal" placeholder="inches" />
+              <input id="checkinWaist" type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" placeholder="inches" autocapitalize="off" autocomplete="off" autocorrect="off" />
             </div>
             <div>
               <label class="small muted">Hips</label>
-              <input id="checkinHips" type="text" inputmode="decimal" placeholder="inches" />
+              <input id="checkinHips" type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" placeholder="inches" autocapitalize="off" autocomplete="off" autocorrect="off" />
             </div>
           </div>
           <div style="margin-top:10px;">
