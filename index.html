@@ -230,6 +230,19 @@
       </div>
 
       <div class="card">
+        <div id="todayWorkoutDashboardCard" style="margin-bottom:12px;"></div>
+        <div class="grid-2" style="margin-bottom:12px;">
+          <div style="background:#f8fafc; border-radius:14px; padding:12px;">
+            <div class="small muted">Workout streak</div>
+            <div id="streakCount" class="metric" style="font-size:24px;">0</div>
+            <div class="small muted">completed this week</div>
+          </div>
+          <div style="background:#f8fafc; border-radius:14px; padding:12px;">
+            <div class="small muted">Today status</div>
+            <div id="todayStatusText" class="metric" style="font-size:20px;">Not completed</div>
+            <button id="markCompleteBtn" style="margin-top:8px;" onclick="toggleTodayWorkoutComplete()">Mark workout complete</button>
+          </div>
+        </div>
         <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
           <div>
             <div style="font-weight:700;">Progress to goal</div>
@@ -313,13 +326,13 @@
           <div id="checkinsList"></div>
         </div>
       </div>
-      
-      <div id="section-program">
-  <div id="todayWorkoutCard" class="card"></div>
-  <div class="card">
-    <h3 style="margin-top:0;">Weekly schedule</h3>
-    <div id="scheduleList"></div>
-  </div>
+
+      <div id="section-program" class="hidden">
+        <div id="todayWorkoutCard" class="card"></div>
+        <div class="card">
+          <h3 style="margin-top:0;">Weekly schedule</h3>
+          <div id="scheduleList"></div>
+        </div>
 
         <div class="card">
           <h3 style="margin-top:0;">Workout A / B</h3>
@@ -335,23 +348,25 @@
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyCH-KixHN0ZXkU0Q901H4hWXviPjy4Ytps",
-      authDomain: "couple-fitness-app.firebaseapp.com",
-      projectId: "couple-fitness-app",
-      storageBucket: "couple-fitness-app.firebasestorage.app",
-      messagingSenderId: "779500720567",
-      appId: "1:779500720567:web:7cf6b6e5e515ddccc69832"
-};
+      apiKey: "PASTE_YOUR_API_KEY",
+      authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+      projectId: "PASTE_YOUR_PROJECT_ID",
+      storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
+      messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
+      appId: "PASTE_YOUR_APP_ID"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    let completionUnsub = null;
 
     let authMode = 'login';
     let currentProfile = 'maxime';
     let currentWorkout = 'A';
     let weightChart = null;
     let shapeChart = null;
+    let completions = [];
 
     const programs = {
       maxime: {
@@ -457,37 +472,38 @@
     }
 
     auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    document.getElementById('loginView').classList.add('hidden');
-    document.getElementById('appView').classList.remove('hidden');
-
-    await seedProfiles();
-
-    // 🔥 force clean load
-    switchProfile('maxime');
-
-  } else {
-    document.getElementById('loginView').classList.remove('hidden');
-    document.getElementById('appView').classList.add('hidden');
-  }
-});
+      if (user) {
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('appView').classList.remove('hidden');
+        await seedProfiles();
+        switchProfile('maxime');
+      } else {
+        document.getElementById('loginView').classList.remove('hidden');
+        document.getElementById('appView').classList.add('hidden');
+        if (completionUnsub) completionUnsub();
+      }
+    });
 
     async function seedProfiles() {
-  const batch = [];
-  for (const key of Object.keys(programs)) {
-    const ref = db.collection('profiles').doc(key);
-    batch.push(ref.set({
-      ...programs[key],
-      motivation: programs[key].motivation || ''
-    }, { merge: true }));
-  }
-  await Promise.all(batch);
-}
+      const batch = [];
+      for (const key of Object.keys(programs)) {
+        const ref = db.collection('profiles').doc(key);
+        const snap = await ref.get();
+        if (!snap.exists) {
+          batch.push(ref.set({
+            ...programs[key],
+            motivation: ''
+          }));
+        }
+      }
+      await Promise.all(batch);
+    }
 
     function switchProfile(profile) {
       currentProfile = profile;
       document.getElementById('tab-maxime').className = profile === 'maxime' ? 'active-tab' : 'secondary';
       document.getElementById('tab-marjorie').className = profile === 'marjorie' ? 'active-tab' : 'secondary';
+      subscribeCompletions();
       loadProfile();
     }
 
@@ -506,23 +522,25 @@
     }
 
     async function loadProfile() {
-  const profileDoc = await db.collection('profiles').doc(currentProfile).get();
-  const savedProfile = profileDoc.exists ? profileDoc.data() : {};
-  const profile = {
-    ...programs[currentProfile],
-    ...savedProfile
-  };
+      const profileDoc = await db.collection('profiles').doc(currentProfile).get();
+      const savedProfile = profileDoc.exists ? profileDoc.data() : {};
+      const profile = {
+        ...programs[currentProfile],
+        ...savedProfile
+      };
 
-  const checkinsSnap = await db.collection('profiles').doc(currentProfile).collection('checkins').orderBy('createdAt', 'desc').get();
-  const checkins = checkinsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const checkinsSnap = await db.collection('profiles').doc(currentProfile).collection('checkins').orderBy('createdAt', 'desc').get();
+      const checkins = checkinsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-  renderHeader(profile, checkins);
-  renderSchedule(profile);
-  renderExercises();
-  renderFormFields(profile);
-  renderCheckins(checkins);
-  renderCharts(profile, checkins);
-}
+      renderHeader(profile, checkins);
+      renderSchedule(profile);
+      renderExercises();
+      renderFormFields(profile);
+      renderCheckins(checkins);
+      renderCharts(profile, checkins);
+      renderDashboardWorkout(profile);
+      renderCompletionUI(profile);
+    }
 
     function renderHeader(profile, checkins) {
       const latest = checkins[0] || {};
@@ -543,6 +561,63 @@
       document.getElementById('progressBar').style.width = progress + '%';
     }
 
+    function getTodayPlan(profile) {
+      const todayIndex = new Date().getDay();
+      const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const todayName = dayMap[todayIndex];
+      const todayPlan = profile.weeklyPlan.find(([day]) => day === todayName);
+      return { todayName, todayPlan: todayPlan ? todayPlan[1] : 'No plan found' };
+    }
+
+    function renderDashboardWorkout(profile) {
+      const { todayName, todayPlan } = getTodayPlan(profile);
+      const wrap = document.getElementById('todayWorkoutDashboardCard');
+      if (!wrap) return;
+      wrap.innerHTML = `
+        <div class="small muted">Today’s workout</div>
+        <div class="metric" style="font-size:24px;">${todayName}</div>
+        <div style="margin-top:6px; font-weight:700;">${todayPlan}</div>
+      `;
+    }
+
+    function getWeekKey(dateObj = new Date()) {
+      const d = new Date(dateObj);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(d.setDate(diff));
+      return monday.toISOString().slice(0, 10);
+    }
+
+    function renderCompletionUI(profile) {
+      const today = new Date().toISOString().slice(0, 10);
+      const weekKey = getWeekKey(new Date());
+      const weekDocs = completions.filter(x => x.weekKey === weekKey && x.completed);
+      const todayDoc = completions.find(x => x.date === today);
+      document.getElementById('streakCount').textContent = String(weekDocs.length);
+      document.getElementById('todayStatusText').textContent = todayDoc && todayDoc.completed ? 'Completed' : 'Not completed';
+      document.getElementById('markCompleteBtn').textContent = todayDoc && todayDoc.completed ? 'Mark as not completed' : 'Mark workout complete';
+    }
+
+    function subscribeCompletions() {
+      if (completionUnsub) completionUnsub();
+      completionUnsub = db.collection('profiles').doc(currentProfile).collection('completions').onSnapshot((snap) => {
+        completions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        loadProfile();
+      });
+    }
+
+    async function toggleTodayWorkoutComplete() {
+      const today = new Date().toISOString().slice(0, 10);
+      const weekKey = getWeekKey(new Date());
+      const ref = db.collection('profiles').doc(currentProfile).collection('completions').doc(today);
+      const snap = await ref.get();
+      if (snap.exists && snap.data().completed) {
+        await ref.set({ date: today, weekKey, completed: false }, { merge: true });
+      } else {
+        await ref.set({ date: today, weekKey, completed: true, completedAt: new Date() }, { merge: true });
+      }
+    }
+
     function renderFormFields(profile) {
       document.getElementById('reminderDay').value = profile.reminderDay || '';
       document.getElementById('reminderText').value = profile.reminderText || '';
@@ -553,31 +628,31 @@
     }
 
     function renderSchedule(profile) {
-  const wrap = document.getElementById('scheduleList');
-  const todayIndex = new Date().getDay();
-  const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const todayName = dayMap[todayIndex];
-  const todayPlan = profile.weeklyPlan.find(([day]) => day === todayName);
+      const wrap = document.getElementById('scheduleList');
+      const todayIndex = new Date().getDay();
+      const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const todayName = dayMap[todayIndex];
+      const todayPlan = profile.weeklyPlan.find(([day]) => day === todayName);
 
-  const todayCard = document.getElementById('todayWorkoutCard');
-  if (todayCard) {
-    todayCard.innerHTML = `
-      <div class="small muted">Today’s plan</div>
-      <div class="metric" style="font-size:24px;">${todayName}</div>
-      <div style="margin-top:6px; font-weight:700;">${todayPlan ? todayPlan[1] : 'No plan found'}</div>
-    `;
-  }
+      const todayCard = document.getElementById('todayWorkoutCard');
+      if (todayCard) {
+        todayCard.innerHTML = `
+          <div class="small muted">Today’s plan</div>
+          <div class="metric" style="font-size:24px;">${todayName}</div>
+          <div style="margin-top:6px; font-weight:700;">${todayPlan ? todayPlan[1] : 'No plan found'}</div>
+        `;
+      }
 
-  wrap.innerHTML = profile.weeklyPlan.map(([day, plan]) => {
-    const isToday = day === todayName;
-    return `
-      <div class="schedule-item" style="border:${isToday ? '2px solid #0f172a' : '0'}; background:${isToday ? '#e2e8f0' : '#f8fafc'};">
-        <div><strong>${day}${isToday ? ' • Today' : ''}</strong><br><span class="small muted">${plan}</span></div>
-        <div class="pill">Plan</div>
-      </div>
-    `;
-  }).join('');
-}
+      wrap.innerHTML = profile.weeklyPlan.map(([day, plan]) => {
+        const isToday = day === todayName;
+        return `
+          <div class="schedule-item" style="border:${isToday ? '2px solid #0f172a' : '0'}; background:${isToday ? '#e2e8f0' : '#f8fafc'};">
+            <div><strong>${day}${isToday ? ' • Today' : ''}</strong><br><span class="small muted">${plan}</span></div>
+            <div class="pill">Plan</div>
+          </div>
+        `;
+      }).join('');
+    }
 
     function renderExercises() {
       const wrap = document.getElementById('exerciseList');
