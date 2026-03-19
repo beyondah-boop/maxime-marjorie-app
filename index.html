@@ -259,7 +259,7 @@
             <div id="todayStatusText" class="metric" style="font-size:20px;">Not completed</div>
             <button id="markCompleteBtn" style="margin-top:8px;" onclick="toggleTodayWorkoutComplete()">Mark workout complete</button>
           </div>
-        </div>
+        <div id="todayWorkoutDashboardCard" style="margin-bottom:12px;"></div>
         <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
           <div>
             <div style="font-weight:700;">Progress to goal</div>
@@ -353,10 +353,11 @@
 
         <div class="card">
           <h3 style="margin-top:0;">Workout A / B</h3>
-          <div class="subtabs">
-            <button id="workoutAButton" class="active-tab" onclick="switchWorkout('A')">Workout A</button>
-            <button id="workoutBButton" class="secondary" onclick="switchWorkout('B')">Workout B</button>
-          </div>
+          <div class="subtabs" style="grid-template-columns:1fr 1fr 1fr;">
+  <button id="workoutAButton" class="active-tab" onclick="switchWorkout('A')">Workout A</button>
+  <button id="workoutBButton" class="secondary" onclick="switchWorkout('B')">Workout B</button>
+  <button id="workoutCButton" class="secondary" onclick="switchWorkout('C')">Workout C</button>
+</div>
           <div id="exerciseList"></div>
         </div>
       </div>
@@ -385,7 +386,16 @@
     let weightChart = null;
     let shapeChart = null;
     let completions = [];
-
+function getTodayWorkout(dayName) {
+  const map = {
+    Monday: 'A',
+    Tuesday: 'B',
+    Wednesday: 'A',
+    Thursday: 'B',
+    Friday: 'C'
+  };
+  return map[dayName] || null;
+}
     const programs = {
       maxime: {
         name: 'Maxime',
@@ -396,32 +406,40 @@
         reminderDay: 'Sunday',
         reminderText: 'Weekly check-in: weight, waist, hips, motivation reset.',
         weeklyPlan: [
-          ['Monday', 'Workout A'],
-          ['Tuesday', 'Walk / Recovery'],
-          ['Wednesday', 'Workout B'],
-          ['Thursday', 'Mobility / Recovery'],
-          ['Friday', 'Workout A'],
-          ['Saturday', 'Optional cardio or Workout B'],
-          ['Sunday', 'Rest']
-        ],
+  ['Monday', 'Chest + Triceps (Push)'],
+  ['Tuesday', 'Back + Biceps (Pull)'],
+  ['Wednesday', 'Legs (Knee-friendly) + Core'],
+  ['Thursday', 'Shoulders + Core'],
+  ['Friday', 'Full Body Fat Burn'],
+  ['Saturday', 'Rest / Walk'],
+  ['Sunday', 'Rest / Stretch']
+],
         workouts: {
-          A: [
-            ['Goblet Squat', '3 x 10-12', '35 lbs', '+5 lbs every 2 weeks', 'Chest up, sit back, pain-free depth', 'https://www.youtube.com/results?search_query=goblet+squat+proper+form'],
-            ['Bench Press', '3 x 8-10', '95 lbs', '+5 lbs/week', 'Control down, drive up', 'https://www.youtube.com/results?search_query=dumbbell+bench+press+form'],
-            ['Lat Pulldown', '3 x 10-12', '90 lbs', '+5 lbs/week', 'Chest up, pull to upper chest', 'https://www.youtube.com/results?search_query=lat+pulldown+proper+form'],
-            ['Romanian Deadlift', '3 x 10', '95 lbs', '+10 lbs every 2 weeks', 'Hips back, flat back', 'https://www.youtube.com/results?search_query=romanian+deadlift+proper+form'],
-            ['Shoulder Press', '3 x 8-10', '30 lbs', '+5 lbs every 2 weeks', 'Core tight, no arch', 'https://www.youtube.com/results?search_query=dumbbell+shoulder+press+proper+form'],
-            ['Plank', '3 x 30-45 sec', 'Bodyweight', '+5 sec weekly', 'Straight line, brace abs', 'https://www.youtube.com/results?search_query=plank+proper+form']
-          ],
-          B: [
-            ['Step-Ups', '3 x 8/leg', 'Bodyweight', 'Add weight slowly', 'Control step, no knee collapse', 'https://www.youtube.com/results?search_query=step+ups+proper+form'],
-            ['Incline DB Press', '3 x 10', '40 lbs', '+5 lbs/week', 'Slow down, strong press', 'https://www.youtube.com/results?search_query=incline+dumbbell+press+proper+form'],
-            ['DB Row', '3 x 10/side', '45 lbs', '+5 lbs/week', 'Flat back, pull elbow', 'https://www.youtube.com/results?search_query=one+arm+dumbbell+row+proper+form'],
-            ['Hip Thrust', '3 x 12', '115 lbs', '+10 lbs every 2 weeks', 'Squeeze glutes at top', 'https://www.youtube.com/results?search_query=hip+thrust+proper+form'],
-            ['Biceps Curl', '3 x 10-12', '25 lbs', '+5 lbs when easy', 'Elbows still, control', 'https://www.youtube.com/results?search_query=dumbbell+bicep+curl+proper+form'],
-            ['Med Ball Slams', '3 x 10', '50 lbs', 'Power focus', 'Explosive full body', 'https://www.youtube.com/results?search_query=medicine+ball+slam+proper+form']
-          ]
-        }
+  A: [
+    ['Bench Press', '4 x 8', '95 lbs', '+5 lbs/week', 'Control down, drive up', 'https://www.youtube.com/results?search_query=bench+press+proper+form'],
+    ['Incline Dumbbell Press', '3 x 10', '40 lbs', '+5 lbs/week', 'Strong press, full control', 'https://www.youtube.com/results?search_query=incline+dumbbell+press+proper+form'],
+    ['Seated Shoulder Press', '3 x 10', '30 lbs', '+5 lbs every 2 weeks', 'Brace core', 'https://www.youtube.com/results?search_query=seated+dumbbell+shoulder+press+proper+form'],
+    ['Triceps Pushdown / Extension', '3 x 12', 'Moderate', 'Add slowly', 'Full extension, elbows still', 'https://www.youtube.com/results?search_query=tricep+pushdown+proper+form'],
+    ['Goblet Squat', '3 x 12', '35 lbs', '+5 lbs every 2 weeks', 'Pain-free depth only', 'https://www.youtube.com/results?search_query=goblet+squat+proper+form'],
+    ['Stationary Bike', '10 min', 'N/A', 'Add time gradually', 'Moderate pace', 'https://www.youtube.com/results?search_query=stationary+bike+fat+loss']
+  ],
+  B: [
+    ['Lat Pulldown', '4 x 10', '90 lbs', '+5 lbs/week', 'Pull to upper chest', 'https://www.youtube.com/results?search_query=lat+pulldown+proper+form'],
+    ['DB Row', '3 x 10/side', '45 lbs', '+5 lbs/week', 'Flat back, pull elbow', 'https://www.youtube.com/results?search_query=one+arm+dumbbell+row+proper+form'],
+    ['Biceps Curl', '3 x 12', '25 lbs', '+5 lbs when easy', 'Control the lowering', 'https://www.youtube.com/results?search_query=dumbbell+bicep+curl+proper+form'],
+    ['Face Pull / Rear Delt Pull', '3 x 12', 'Moderate', 'Add slowly', 'Elbows high', 'https://www.youtube.com/results?search_query=face+pull+proper+form'],
+    ['Plank', '3 x 30 sec', 'Bodyweight', '+5 sec weekly', 'Brace abs', 'https://www.youtube.com/results?search_query=plank+proper+form'],
+    ['Stationary Bike', '10 min', 'N/A', 'Add time gradually', 'Moderate pace', 'https://www.youtube.com/results?search_query=stationary+bike+fat+loss']
+  ],
+  C: [
+    ['Dumbbell Squat to Press', '3 x 12', '20 lbs', '+5 lbs when easy', 'Smooth full-body movement', 'https://www.youtube.com/results?search_query=dumbbell+thruster+proper+form'],
+    ['Push-ups', '3 x max', 'Bodyweight', 'Add reps weekly', 'Tight core', 'https://www.youtube.com/results?search_query=push+up+proper+form'],
+    ['Lat Pulldown', '3 x 10', '85 lbs', '+5 lbs when easy', 'Controlled reps', 'https://www.youtube.com/results?search_query=lat+pulldown+proper+form'],
+    ['DB Romanian Deadlift', '3 x 10', '40 lbs', '+5 lbs when easy', 'Hips back, flat back', 'https://www.youtube.com/results?search_query=dumbbell+romanian+deadlift+proper+form'],
+    ['Plank', '3 x 30 sec', 'Bodyweight', '+5 sec weekly', 'Brace abs', 'https://www.youtube.com/results?search_query=plank+proper+form'],
+    ['Bike Intervals', '15 min', 'N/A', 'Increase effort slowly', 'Hard/easy intervals', 'https://www.youtube.com/results?search_query=stationary+bike+intervals']
+  ]
+}
       },
       marjorie: {
         name: 'Marjorie',
@@ -432,32 +450,37 @@
         reminderDay: 'Sunday',
         reminderText: 'Weekly check-in: weight, waist, hips, motivation reset.',
         weeklyPlan: [
-          ['Monday', 'Workout A'],
-          ['Tuesday', 'Treadmill Walk 30 min'],
-          ['Wednesday', 'Workout B'],
-          ['Thursday', 'Walk + Mobility'],
-          ['Friday', 'Workout A'],
-          ['Saturday', 'Optional Workout B or Walk'],
-          ['Sunday', 'Rest']
-        ],
+  ['Monday', 'Glutes + Legs'],
+  ['Tuesday', 'Back + Biceps'],
+  ['Wednesday', 'Chest + Shoulders + Triceps'],
+  ['Thursday', 'Glutes + Core'],
+  ['Friday', 'Full Body Curves + Fat Burn'],
+  ['Saturday', 'Rest / Walk'],
+  ['Sunday', 'Rest / Stretch']
+],
         workouts: {
-          A: [
-            ['Goblet Squat', '3 x 10-12', '25 lbs', '+5 lbs every 2 weeks', 'Sit back, chest up', 'https://www.youtube.com/results?search_query=goblet+squat+proper+form'],
-            ['Hip Thrust', '3 x 12', '95 lbs', '+10 lbs every 2 weeks', 'Squeeze glutes hard', 'https://www.youtube.com/results?search_query=hip+thrust+proper+form'],
-            ['Bench Press', '3 x 8-10', '65 lbs', '+5 lbs/week', 'Control and press', 'https://www.youtube.com/results?search_query=dumbbell+bench+press+proper+form'],
-            ['Lat Pulldown', '3 x 10-12', '70 lbs', '+5 lbs/week', 'Pull to chest', 'https://www.youtube.com/results?search_query=lat+pulldown+proper+form'],
-            ['Shoulder Press', '3 x 10', '20 lbs', '+5 lbs every 2 weeks', 'Core tight', 'https://www.youtube.com/results?search_query=dumbbell+shoulder+press+proper+form']
-          ],
-          B: [
-            ['Step-Ups', '3 x 8/leg', 'Bodyweight', 'Add weight slowly', 'Push through heel', 'https://www.youtube.com/results?search_query=step+ups+proper+form'],
-            ['Romanian Deadlift', '3 x 10', '75 lbs', '+10 lbs every 2 weeks', 'Hips back, stretch hamstrings', 'https://www.youtube.com/results?search_query=romanian+deadlift+proper+form'],
-            ['DB Row', '3 x 10', '30 lbs', '+5 lbs/week', 'Flat back', 'https://www.youtube.com/results?search_query=one+arm+dumbbell+row+proper+form'],
-            ['Glute Bridge', '3 x 12', 'Bodyweight', 'Add weight later', 'Squeeze glutes', 'https://www.youtube.com/results?search_query=glute+bridge+proper+form'],
-            ['Plank', '3 x 30 sec', 'Bodyweight', '+5 sec weekly', 'Brace abs', 'https://www.youtube.com/results?search_query=plank+proper+form'],
-            ['Treadmill Walk', '30-45 min', 'N/A', '+5 min or +incline', 'Moderate pace, slight incline', 'https://www.youtube.com/results?search_query=treadmill+walking+fat+loss+incline']
-          ]
-        }
-      }
+  A: [
+    ['Goblet Squat', '4 x 10', '25 lbs', '+5 lbs every 2 weeks', 'Sit back, chest up', 'https://www.youtube.com/results?search_query=goblet+squat+proper+form'],
+    ['Hip Thrust', '4 x 12', '95 lbs', '+10 lbs every 2 weeks', 'Squeeze glutes hard', 'https://www.youtube.com/results?search_query=hip+thrust+proper+form'],
+    ['Step-Ups', '3 x 10/leg', 'Bodyweight', 'Add DB later', 'Push through heel', 'https://www.youtube.com/results?search_query=step+ups+proper+form'],
+    ['Glute Bridge', '3 x 15', 'Bodyweight', 'Add weight later', 'Full squeeze at top', 'https://www.youtube.com/results?search_query=glute+bridge+proper+form'],
+    ['Walking / Treadmill', '10 min', 'N/A', 'Add incline gradually', 'Steady pace', 'https://www.youtube.com/results?search_query=treadmill+walk+fat+loss']
+  ],
+  B: [
+    ['Lat Pulldown', '4 x 10', '70 lbs', '+5 lbs/week', 'Pull to chest', 'https://www.youtube.com/results?search_query=lat+pulldown+proper+form'],
+    ['DB Row', '3 x 10', '30 lbs', '+5 lbs/week', 'Flat back', 'https://www.youtube.com/results?search_query=one+arm+dumbbell+row+proper+form'],
+    ['Biceps Curl', '3 x 12', '15 lbs', '+5 lbs when easy', 'Control every rep', 'https://www.youtube.com/results?search_query=dumbbell+bicep+curl+proper+form'],
+    ['Rear Delt Raise', '3 x 12', '10 lbs', '+2.5 to 5 lbs', 'Slow and controlled', 'https://www.youtube.com/results?search_query=rear+delt+raise+proper+form'],
+    ['Treadmill Walk', '10 min', 'N/A', 'Add incline gradually', 'Steady pace', 'https://www.youtube.com/results?search_query=treadmill+walk+fat+loss']
+  ],
+  C: [
+    ['Bench Press / DB Press', '3 x 10', '65 lbs', '+5 lbs/week', 'Control and press', 'https://www.youtube.com/results?search_query=dumbbell+bench+press+proper+form'],
+    ['Shoulder Press', '3 x 10', '20 lbs', '+5 lbs every 2 weeks', 'Brace core', 'https://www.youtube.com/results?search_query=dumbbell+shoulder+press+proper+form'],
+    ['Triceps Extension', '3 x 12', 'Moderate', 'Add slowly', 'Elbows steady', 'https://www.youtube.com/results?search_query=tricep+extension+proper+form'],
+    ['Bodyweight Squat', '3 x 12', 'Bodyweight', 'Add load later', 'Control movement', 'https://www.youtube.com/results?search_query=bodyweight+squat+proper+form'],
+    ['Treadmill Walk', '12 min', 'N/A', 'Add incline gradually', 'Steady pace', 'https://www.youtube.com/results?search_query=treadmill+walk+fat+loss']
+  ]
+}
     };
 
     function setAuthMode(mode) {
@@ -610,15 +633,18 @@
     }
 
     function renderDashboardWorkout(profile) {
-      const { todayName, todayPlan } = getTodayPlan(profile);
-      const wrap = document.getElementById('todayWorkoutDashboardCard');
-      if (!wrap) return;
-      wrap.innerHTML = `
-        <div class="small muted">Today’s workout</div>
-        <div class="metric" style="font-size:24px;">${todayName}</div>
-        <div style="margin-top:6px; font-weight:700;">${todayPlan}</div>
-      `;
-    }
+  const { todayName, todayPlan } = getTodayPlan(profile);
+  const workoutLetter = getTodayWorkout(todayName);
+  const wrap = document.getElementById('todayWorkoutDashboardCard');
+  if (!wrap) return;
+
+  wrap.innerHTML = `
+    <div class="small muted">Today’s workout</div>
+    <div class="metric" style="font-size:24px;">${todayName}</div>
+    <div style="margin-top:6px; font-weight:700;">${todayPlan}</div>
+    <div class="small muted" style="margin-top:6px;">Workout ${workoutLetter || '-'}</div>
+  `;
+}
 
     function getWeekKey(dateObj = new Date()) {
       const d = new Date(dateObj);
@@ -668,49 +694,60 @@
     }
 
     function renderSchedule(profile) {
-      const wrap = document.getElementById('scheduleList');
-      const todayIndex = new Date().getDay();
-      const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const todayName = dayMap[todayIndex];
-      const todayPlan = profile.weeklyPlan.find(([day]) => day === todayName);
+  const wrap = document.getElementById('scheduleList');
+  const todayIndex = new Date().getDay();
+  const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const todayName = dayMap[todayIndex];
+  const todayPlan = profile.weeklyPlan.find(([day]) => day === todayName);
+  const workoutLetter = getTodayWorkout(todayName);
 
-      const todayCard = document.getElementById('todayWorkoutCard');
-      if (todayCard) {
-        todayCard.innerHTML = `
-          <div class="small muted">Today’s plan</div>
-          <div class="metric" style="font-size:24px;">${todayName}</div>
-          <div style="margin-top:6px; font-weight:700;">${todayPlan ? todayPlan[1] : 'No plan found'}</div>
-        `;
-      }
+  const todayCard = document.getElementById('todayWorkoutCard');
+  if (todayCard) {
+    todayCard.innerHTML = `
+      <div class="small muted">Today’s plan</div>
+      <div class="metric" style="font-size:24px;">${todayName}</div>
+      <div style="margin-top:6px; font-weight:700;">${todayPlan ? todayPlan[1] : 'No plan found'}</div>
+      <div style="margin-top:6px;" class="small muted">Workout ${workoutLetter || '-'}</div>
+    `;
+  }
 
-      wrap.innerHTML = profile.weeklyPlan.map(([day, plan]) => {
-        const isToday = day === todayName;
-        return `
-          <div class="schedule-item" style="border:${isToday ? '2px solid #0f172a' : '0'}; background:${isToday ? '#e2e8f0' : '#f8fafc'};">
-            <div><strong>${day}${isToday ? ' • Today' : ''}</strong><br><span class="small muted">${plan}</span></div>
-            <div class="pill">Plan</div>
-          </div>
-        `;
-      }).join('');
+  if (workoutLetter) {
+    currentWorkout = workoutLetter;
+    document.getElementById('workoutAButton').className = workoutLetter === 'A' ? 'active-tab' : 'secondary';
+    document.getElementById('workoutBButton').className = workoutLetter === 'B' ? 'active-tab' : 'secondary';
+    if (document.getElementById('workoutCButton')) {
+      document.getElementById('workoutCButton').className = workoutLetter === 'C' ? 'active-tab' : 'secondary';
     }
+  }
+
+  wrap.innerHTML = profile.weeklyPlan.map(([day, plan]) => {
+    const isToday = day === todayName;
+    return `
+      <div class="schedule-item" style="border:${isToday ? '2px solid #0f172a' : '0'}; background:${isToday ? '#e2e8f0' : '#f8fafc'};">
+        <div><strong>${day}${isToday ? ' • Today' : ''}</strong><br><span class="small muted">${plan}</span></div>
+        <div class="pill">Plan</div>
+      </div>
+    `;
+  }).join('');
+}
 
     function renderExercises() {
-      const wrap = document.getElementById('exerciseList');
-      const list = programs[currentProfile].workouts[currentWorkout];
-      wrap.innerHTML = list.map((ex, idx) => `
-        <div class="exercise">
-          <div style="display:flex; justify-content:space-between; gap:10px; align-items:start;">
-            <div>
-              <div style="font-weight:700;">${ex[0]}</div>
-              <div class="small muted">${ex[1]} · Start: ${ex[2]}</div>
-            </div>
-          </div>
-          <div style="margin-top:8px;"><span class="pill">Progression: ${ex[3]}</span></div>
-          <div class="small" style="margin-top:8px;">Cue: ${ex[4]}</div>
-          <a class="btn" style="display:inline-block; text-decoration:none; margin-top:10px;" href="${ex[5]}" target="_blank">Clickable visual</a>
+  const wrap = document.getElementById('exerciseList');
+  const list = programs[currentProfile].workouts[currentWorkout] || [];
+  wrap.innerHTML = list.map((ex) => `
+    <div class="exercise">
+      <div style="display:flex; justify-content:space-between; gap:10px; align-items:start;">
+        <div>
+          <div style="font-weight:700;">${ex[0]}</div>
+          <div class="small muted">${ex[1]} · Start: ${ex[2]}</div>
         </div>
-      `).join('');
-    }
+      </div>
+      <div style="margin-top:8px;"><span class="pill">Progression: ${ex[3]}</span></div>
+      <div class="small" style="margin-top:8px;">Cue: ${ex[4]}</div>
+      <a class="btn" style="display:inline-block; text-decoration:none; margin-top:10px;" href="${ex[5]}" target="_blank">Clickable visual</a>
+    </div>
+  `).join('');
+}
 
     function renderCheckins(checkins) {
       const wrap = document.getElementById('checkinsList');
