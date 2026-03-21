@@ -782,8 +782,17 @@ function getTodayWorkout(dayName) {
 
       <div class="small" style="margin-top:8px;">Cue: ${ex[4]}</div>
 
+   <button onclick="removeExercise('${ex[0]}')" style="margin-top:10px;">
+        Remove
+      </button>
+
     </div>
   `).join('');
+}
+    function removeExercise(name) {
+  const list = programs[currentProfile].workouts[currentWorkout];
+  programs[currentProfile].workouts[currentWorkout] = list.filter(e => e[0] !== name);
+  renderExercises();
 }
     function renderLibrary() {
   const wrap = document.getElementById('libraryList');
@@ -811,6 +820,7 @@ function addExerciseToWorkout(name) {
   ];
 
   programs[currentProfile].workouts[currentWorkout].push(newExercise);
+  alert(ex.name + ' added to workout');
   renderExercises();
 }
     function renderCheckins(checkins) {
