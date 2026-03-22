@@ -411,12 +411,28 @@ function getTodayWorkout(dayName) {
   const exerciseLibrary = [
   { name: 'Bench Press', group: 'Chest', image: 'images/bench-press.png' },
   { name: 'Incline Dumbbell Press', group: 'Chest', image: 'images/incline-db-press.png' },
+  { name: 'Seated Shoulder Press', group: 'Shoulders', image: 'images/seated-shoulder-press.png' },
+  { name: 'Shoulder Press', group: 'Shoulders', image: 'images/seated-shoulder-press.png' },
+  { name: 'Triceps Pushdown / Extension', group: 'Triceps', image: 'images/triceps-extension.png' },
+  { name: 'Triceps Extension', group: 'Triceps', image: 'images/triceps-extension.png' },
   { name: 'Lat Pulldown', group: 'Back', image: 'images/lat-pulldown.png' },
   { name: 'DB Row', group: 'Back', image: 'images/db-row.png' },
+  { name: 'Biceps Curl', group: 'Biceps', image: 'images/biceps-curl.png' },
+  { name: 'Face Pull / Rear Delt Pull', group: 'Shoulders', image: 'images/face-pull.png' },
+  { name: 'Rear Delt Raise', group: 'Shoulders', image: 'images/rear-delt-raise.png' },
   { name: 'Goblet Squat', group: 'Legs', image: 'images/goblet-squat.png' },
+  { name: 'Dumbbell Squat to Press', group: 'Full Body', image: 'images/dumbbell-squat-to-press.png' },
+  { name: 'Bodyweight Squat', group: 'Legs', image: 'images/bodyweight-squat.png' },
+  { name: 'Step-Ups', group: 'Legs', image: 'images/step-ups.png' },
   { name: 'Hip Thrust', group: 'Glutes', image: 'images/hip-thrust.png' },
+  { name: 'Glute Bridge', group: 'Glutes', image: 'images/glute-bridge.png' },
+  { name: 'DB Romanian Deadlift', group: 'Legs', image: 'images/db-romanian-deadlift.png' },
   { name: 'Plank', group: 'Core', image: 'images/plank.png' },
-  { name: 'Treadmill Walk', group: 'Cardio', image: 'images/treadmill-walk.png' }
+  { name: 'Push-ups', group: 'Chest', image: 'images/push-ups.png' },
+  { name: 'Stationary Bike', group: 'Cardio', image: 'images/stationary-bike.png' },
+  { name: 'Bike Intervals', group: 'Cardio', image: 'images/stationary-bike.png' },
+  { name: 'Treadmill Walk', group: 'Cardio', image: 'images/treadmill-walk.png' },
+  { name: 'Walking / Treadmill', group: 'Cardio', image: 'images/treadmill-walk.png' }
 ];  
     const programs = {
       maxime: {
@@ -440,26 +456,26 @@ function getTodayWorkout(dayName) {
   A: [
     ['Bench Press', '4 x 8', '95 lbs', '+5 lbs/week', 'Control down, drive up', 'images/bench-press.png'],
     ['Incline Dumbbell Press', '3 x 10', '40 lbs', '+5 lbs/week', 'Strong press, full control', 'images/incline-db-press.png'],
-    ['Seated Shoulder Press', '3 x 10', '30 lbs', '+5 lbs every 2 weeks', 'Brace core', ''],
-    ['Triceps Pushdown / Extension', '3 x 12', 'Moderate', 'Add slowly', 'Full extension, elbows still', ''],
+    ['Seated Shoulder Press', '3 x 10', '30 lbs', '+5 lbs every 2 weeks', 'Brace core', 'images/seated-shoulder-press.png'],
+    ['Triceps Pushdown / Extension', '3 x 12', 'Moderate', 'Add slowly', 'Full extension, elbows still', 'images/triceps-extension.png'],
     ['Goblet Squat', '3 x 12', '35 lbs', '+5 lbs every 2 weeks', 'Pain-free depth only', 'images/goblet-squat.png'],
-    ['Stationary Bike', '10 min', 'N/A', 'Add time gradually', 'Moderate pace', '']
+    ['Stationary Bike', '10 min', 'N/A', 'Add time gradually', 'Moderate pace', 'images/triceps-extension.png']
   ],
   B: [
     ['Lat Pulldown', '4 x 10', '90 lbs', '+5 lbs/week', 'Pull to upper chest', 'images/lat-pulldown.png'],
     ['DB Row', '3 x 10/side', '45 lbs', '+5 lbs/week', 'Flat back, pull elbow', 'images/db-row.png'],
-    ['Biceps Curl', '3 x 12', '25 lbs', '+5 lbs when easy', 'Control the lowering', ''],
-    ['Face Pull / Rear Delt Pull', '3 x 12', 'Moderate', 'Add slowly', 'Elbows high', ''],
+    ['Biceps Curl', '3 x 12', '25 lbs', '+5 lbs when easy', 'Control the lowering', 'images/biceps-curl.png'],
+    ['Face Pull / Rear Delt Pull', '3 x 12', 'Moderate', 'Add slowly', 'Elbows high', 'images/face-pull.png'],
     ['Plank', '3 x 30 sec', 'Bodyweight', '+5 sec weekly', 'Brace abs', 'images/plank.png'],
-    ['Stationary Bike', '10 min', 'N/A', 'Add time gradually', 'Moderate pace', '']
+    ['Stationary Bike', '10 min', 'N/A', 'Add time gradually', 'Moderate pace', 'images/stationary-bike.png']
   ],
   C: [
-    ['Dumbbell Squat to Press', '3 x 12', '20 lbs', '+5 lbs when easy', 'Smooth full-body movement', ''],
-    ['Push-ups', '3 x max', 'Bodyweight', 'Add reps weekly', 'Tight core', ''],
+    ['Dumbbell Squat to Press', '3 x 12', '20 lbs', '+5 lbs when easy', 'Smooth full-body movement', 'images/face-pull.png'],
+    ['Push-ups', '3 x max', 'Bodyweight', 'Add reps weekly', 'Tight core', 'images/dumbbell-squat-to-press.png'],
     ['Lat Pulldown', '3 x 10', '85 lbs', '+5 lbs when easy', 'Controlled reps', 'images/lat-pulldown.png'],
-    ['DB Romanian Deadlift', '3 x 10', '40 lbs', '+5 lbs when easy', 'Hips back, flat back', ''],
+    ['DB Romanian Deadlift', '3 x 10', '40 lbs', '+5 lbs when easy', 'Hips back, flat back', 'images/push-ups.png'],
     ['Plank', '3 x 30 sec', 'Bodyweight', '+5 sec weekly', 'Brace abs', 'images/plank.png'],
-    ['Bike Intervals', '15 min', 'N/A', 'Increase effort slowly', 'Hard/easy intervals', '']
+    ['Bike Intervals', '15 min', 'N/A', 'Increase effort slowly', 'Hard/easy intervals', 'images/stationary-bike.png']
   ]
 }
       },
@@ -484,22 +500,22 @@ function getTodayWorkout(dayName) {
   A: [
     ['Goblet Squat', '4 x 10', '25 lbs', '+5 lbs every 2 weeks', 'Sit back, chest up', 'images/goblet-squat.png'],
     ['Hip Thrust', '4 x 12', '95 lbs', '+10 lbs every 2 weeks', 'Squeeze glutes hard', 'images/hip-thrust.png'],
-    ['Step-Ups', '3 x 10/leg', 'Bodyweight', 'Add DB later', 'Push through heel', ''],
-    ['Glute Bridge', '3 x 15', 'Bodyweight', 'Add weight later', 'Full squeeze at top', ''],
+    ['Step-Ups', '3 x 10/leg', 'Bodyweight', 'Add DB later', 'Push through heel', 'images/step-ups.png'],
+    ['Glute Bridge', '3 x 15', 'Bodyweight', 'Add weight later', 'Full squeeze at top', 'images/step-ups.png'],
     ['Walking / Treadmill', '10 min', 'N/A', 'Add incline gradually', 'Steady pace', 'images/treadmill-walk.png']
   ],
   B: [
     ['Lat Pulldown', '4 x 10', '70 lbs', '+5 lbs/week', 'Pull to chest', 'images/lat-pulldown.png'],
     ['DB Row', '3 x 10', '30 lbs', '+5 lbs/week', 'Flat back', 'images/db-row.png'],
-    ['Biceps Curl', '3 x 12', '15 lbs', '+5 lbs when easy', 'Control every rep', ''],
-    ['Rear Delt Raise', '3 x 12', '10 lbs', '+2.5 to 5 lbs', 'Slow and controlled', ''],
+    ['Biceps Curl', '3 x 12', '15 lbs', '+5 lbs when easy', 'Control every rep', 'images/biceps-curl.png'],
+    ['Rear Delt Raise', '3 x 12', '10 lbs', '+2.5 to 5 lbs', 'Slow and controlled', 'images/glute-bridge.png'],
     ['Treadmill Walk', '10 min', 'N/A', 'Add incline gradually', 'Steady pace', 'images/treadmill-walk.png']
   ],
   C: [
     ['Bench Press / DB Press', '3 x 10', '65 lbs', '+5 lbs/week', 'Control and press', 'images/bench-press.png'],
-    ['Shoulder Press', '3 x 10', '20 lbs', '+5 lbs every 2 weeks', 'Brace core', ''],
-    ['Triceps Extension', '3 x 12', 'Moderate', 'Add slowly', 'Elbows steady', ''],
-    ['Bodyweight Squat', '3 x 12', 'Bodyweight', 'Add load later', 'Control movement', ''],
+    ['Shoulder Press', '3 x 10', '20 lbs', '+5 lbs every 2 weeks', 'Brace core', 'images/seated-shoulder-press.png'],
+    ['Triceps Extension', '3 x 12', 'Moderate', 'Add slowly', 'Elbows steady', 'images/triceps-extension.png'],
+    ['Bodyweight Squat', '3 x 12', 'Bodyweight', 'Add load later', 'Control movement', 'images/rear-delt-raise.png'],
     ['Treadmill Walk', '12 min', 'N/A', 'Add incline gradually', 'Steady pace', 'images/treadmill-walk.png']
   ]
 }
